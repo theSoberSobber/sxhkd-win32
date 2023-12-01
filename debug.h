@@ -1,3 +1,4 @@
+#ifdef DEBUG
 void dbg(const char *errstr, ...) {
 	va_list ap;
 	va_start(ap, errstr);
@@ -5,3 +6,6 @@ void dbg(const char *errstr, ...) {
 	fflush(stdout);
 	va_end(ap);
 }
+#else
+#define dbg
+#endif

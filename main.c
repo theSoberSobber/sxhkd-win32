@@ -5,46 +5,63 @@
 #include <shellapi.h>
 #include <stdbool.h>
 
-#define NAME   "sxhkd-win32" 	/* Used for window name/class */
+#define NAME "sxhkd-win32"
+#define LENGTH(x) (sizeof x / sizeof x[0])
 
-// options: MOD_CTRL | MOD_SHIFT | MOD_ALT
-#define MODKEY MOD_WIN
-#define HOTKEY_ID 1
+typedef union {
+	int i;
+	unsigned int ui;
+	float f;
+	void *v;
+} Arg;
 
-void eprint(const char *errstr, ...) {
-	va_list ap;
-	va_start(ap, errstr);
-	vfprintf(stdout, errstr, ap);
-	fflush(stdout);
-	va_end(ap);
-}
+typedef struct {
+	unsigned int mod;
+	unsigned int key;
+	void (*func)(const Arg *);
+	const Arg arg;
+} Key;
+
+#include "debug.h"
+#include "actions.h"
+#include "config.h"
 
 HWND dwmhwnd;
 
-#ifdef DEBUG
-#define dbg eprint
-#else
-#define dbg
-#endif
+/* Actions Implementation */
 
-void quit(const Arg *arg) {
+void quit(const Arg* arg) {
 	PostMessage(dwmhwnd, WM_CLOSE, 0, 0);
 }
 
-void test() {
-	dbg("Toggling Explorer!");
+void test(const Arg* arg) {
+	dbg("Hello from handler!\n");
 }
 
+void spawn(const Arg *arg) {
+	ShellExecute(NULL, NULL, ((char **)arg->v)[0], ((char **)arg->v)[1], NULL, SW_SHOWDEFAULT);
+}
+
+void toggleexplorer(const Arg *arg) {
+#define setvisibility(x, y) SetWindowPos(x, 0, 0, 0, 0, 0, (y ? SWP_SHOWWINDOW : SWP_HIDEWINDOW) | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER);
+	HWND hwnd = FindWindow("Progman", "Program Manager");
+	if (hwnd) setvisibility(hwnd, !IsWindowVisible(hwnd));
+
+	hwnd = FindWindow("Shell_TrayWnd", NULL);
+	if (hwnd) setvisibility(hwnd, !IsWindowVisible(hwnd));
+}
+
+/* Actions End here */
+
 void cleanup() {
-	UnregisterHotKey(dwmhwnd, HOTKEY_ID);
+	for (int i = 0; i < LENGTH(keys); i++) UnregisterHotKey(dwmhwnd, i + 1);
 	DestroyWindow(dwmhwnd);
 }
 
 void die(const char *errstr, ...) {
 	va_list ap;
 	va_start(ap, errstr);
-	vfprintf(stdout, errstr, ap);
-	fflush(stdout);
+	dbg(errstr, ap);
 	va_end(ap);
 	cleanup();
 	exit(EXIT_FAILURE);
@@ -61,9 +78,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 		PostQuitMessage(0);
 		break;
 	case WM_HOTKEY:
-		if (wParam == HOTKEY_ID) {
+		if (wParam > 0 && wParam <= LENGTH(keys)) {
 			dbg("\nHotkey was pressed!\n");
-			test();
+			keys[wParam - 1].func(&(keys[wParam - 1].arg));
 		}
 		break;
 	default:
@@ -92,8 +109,7 @@ void setup(HINSTANCE hInstance) {
 	if (!RegisterClassEx(&winClass)) die("Error registering window class\n");
 	dwmhwnd = CreateWindowEx(0, NAME, NAME, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, hInstance, NULL);
 	if (!dwmhwnd) die("Error creating window\n");
-
-	RegisterHotKey(dwmhwnd, HOTKEY_ID, MODKEY, (unsigned int)'4');
+	for (int i = 0; i < LENGTH(keys); i++) RegisterHotKey(dwmhwnd, i + 1, keys[i].mod, keys[i].key);
 }
 
 
@@ -103,19 +119,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	extern char ** __argv;
 	extern int __argc;
 
-	// This attaches a console to the parent process if it has a console
 	if (AttachConsole(ATTACH_PARENT_PROCESS)) {
-		// reopen stout handle as console window output
 		freopen("CONOUT$", "wb", stdout);
-		// reopen stderr handle as console window output
 		freopen("CONOUT$", "wb", stderr);
 	}
 #endif
 
-	dbg("Hello!! :))\n");
+	dbg("Hello!! : ))\n");
 
 	MSG msg;
-
 	setup(hInstance);
 
 	while (GetMessage(&msg, NULL, 0, 0) > 0) {
