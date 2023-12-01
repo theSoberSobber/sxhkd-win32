@@ -1,0 +1,1 @@
+start /w a.exe
