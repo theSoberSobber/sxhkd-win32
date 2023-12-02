@@ -6,7 +6,7 @@
 // VK_RETURN == RETURN KEY on Keyboard
 
 // command, argument
-static const char *termcmd[]  = { "cmd.exe", NULL };
+static const char *termcmd[]  = { "wt.exe", NULL };
 static const char *vscode[] = {"code", "D:/code"};
 
 static Key keys[] = {
