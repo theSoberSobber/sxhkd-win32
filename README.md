@@ -7,6 +7,9 @@ sxhkd impl for windows, cus why not.
 - Copy the produced `sxhkd-win32.exe` to your location of choice
 - Run `make clean` in the working directory to clean it
 
+# Virtual Desktop Features
+Please see [VD-Action.md](./VD-action.md).
+
 # Sample config.h
 
 ```c
