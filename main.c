@@ -28,34 +28,28 @@ typedef struct {
 
 HWND dwmhwnd;
 
-/* Actions Implementation */
+#ifdef VDA_FEATURES
+HMODULE VDA;
 
-void quit(const Arg* arg) {
-	PostMessage(dwmhwnd, WM_CLOSE, 0, 0);
-}
+typedef int(*GoToDesktopNumber)(int);
+typedef int(*MoveWindowToDesktopNumber)(HWND, int);
+typedef int(*GetCurrentDesktop)();
+typedef int(*GetWindowDesktopNumber)(HWND);
 
-void test(const Arg* arg) {
-	dbg("Hello from handler!\n");
-}
+GetCurrentDesktop GetCurrentDesktopFunc;
+MoveWindowToDesktopNumber MoveWindowToDesktopNumberFunc;
+GoToDesktopNumber GoToDesktopNumberFunc;
+GetWindowDesktopNumber GetWindowDesktopNumberFunc;
+#endif
 
-void spawn(const Arg *arg) {
-	ShellExecute(NULL, NULL, ((char **)arg->v)[0], ((char **)arg->v)[1], NULL, SW_SHOWDEFAULT);
-}
-
-void toggleexplorer(const Arg *arg) {
-#define setvisibility(x, y) SetWindowPos(x, 0, 0, 0, 0, 0, (y ? SWP_SHOWWINDOW : SWP_HIDEWINDOW) | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER);
-	HWND hwnd = FindWindow("Progman", "Program Manager");
-	if (hwnd) setvisibility(hwnd, !IsWindowVisible(hwnd));
-
-	hwnd = FindWindow("Shell_TrayWnd", NULL);
-	if (hwnd) setvisibility(hwnd, !IsWindowVisible(hwnd));
-}
-
-/* Actions End here */
+#include "actions.c"
 
 void cleanup() {
 	for (int i = 0; i < LENGTH(keys); i++) UnregisterHotKey(dwmhwnd, i + 1);
 	DestroyWindow(dwmhwnd);
+	#ifdef VDA_FEATURES
+	FreeLibrary(VDA);
+	#endif
 }
 
 void die(const char *errstr, ...) {
@@ -126,7 +120,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 #endif
 
 	dbg("Hello!! : ))\n");
-
+	#ifdef VDA_FEATURES
+	char* libName = "\\VirtualDesktopAccessor.dll";
+	TCHAR libFullPath[MAX_PATH + 1] = { 0 };
+	GetCurrentDirectory(MAX_PATH, libFullPath);
+	// for(int i=0; libFullPath[i]; i++) if(libFullPath[i]=='\\') libFullPath[i]='/';
+	strcat_s(libFullPath, sizeof libFullPath, libName);
+	VDA = LoadLibrary(libFullPath);
+	if (VDA == NULL){
+    	printf("Failed to load the DLL, VD Features will not work");
+	};
+	MoveWindowToDesktopNumberFunc = (MoveWindowToDesktopNumber)GetProcAddress(VDA, "MoveWindowToDesktopNumber");
+	GoToDesktopNumberFunc = (GoToDesktopNumber)GetProcAddress(VDA, "GoToDesktopNumber");
+	GetCurrentDesktopFunc = (GetCurrentDesktop)GetProcAddress(VDA, "GetCurrentDesktopNumber");
+	GetWindowDesktopNumberFunc = (GetWindowDesktopNumber)GetProcAddress(VDA, "GetWindowDesktopNumber");
+	#endif
 	MSG msg;
 	setup(hInstance);
 

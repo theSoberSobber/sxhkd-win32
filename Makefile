@@ -1,4 +1,4 @@
-DEBUG =
+DEBUG = -DDEBUG
 CFLAGS = -w -Wall -Os ${DEBUG}
 LDFLAGS = -s -mwindows
 CC = gcc
