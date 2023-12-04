@@ -22,8 +22,10 @@ Please see [VD-Action.md](./VD-action.md).
 // VK_TAB == TAB KEY on Keyboard
 
 // command, argument
-static const char *termcmd[]  = { "wt.exe", NULL };
-static const char *vscode[] = {"code", "D:/code"};
+static const char *termcmd[]  = {NULL, "wt.exe", NULL };
+static const char *vscode[] = {NULL, "code", "D:/code"};
+static const char * codeforces[] = {"open", "https://codeforces.com", NULL};
+static const char * leetcode[] = {"open", "https://leetcode.com", NULL};
 
 #define NUMKEY(x) \
 		{MODKEY,	x+'0',	GoToDesktopNumberW, 	{.i= x ? x : 10}}, \
@@ -34,6 +36,8 @@ static Key keys[] = {
 	{ MODKEY,                       'B',       test,          {0} },
 	{ MODKEY,                       'P',       spawn,      	  {.v = vscode} },
 	{ MODKEY,                     VK_RETURN, spawn,         {.v = termcmd } },
+	{ MODKEY,                     	'C', spawn,         {.v = codeforces } },
+	{ MODKEY,                     	'L', spawn,         {.v = leetcode } },
 	{ MODKEY,                       'E',       toggleexplorer, {0} },
 	{ MODKEY | MOD_SHIFT,                       'Q',       quit,          {0} },
 	#ifdef VDA_FEATURES

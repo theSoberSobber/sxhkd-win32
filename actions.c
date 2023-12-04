@@ -9,7 +9,7 @@ void test(const Arg* arg) {
 }
 
 void spawn(const Arg *arg) {
-	ShellExecute(NULL, NULL, ((char **)arg->v)[0], ((char **)arg->v)[1], NULL, SW_SHOWDEFAULT);
+	ShellExecute(NULL, ((char **)arg->v)[0], ((char **)arg->v)[1], ((char **)arg->v)[2], NULL, SW_SHOWDEFAULT);
 }
 
 void toggleexplorer(const Arg *arg) {
