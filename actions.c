@@ -20,6 +20,12 @@ void toggleexplorer(const Arg *arg) {
 	hwnd = FindWindow("Shell_TrayWnd", NULL);
 	if (hwnd) setvisibility(hwnd, !IsWindowVisible(hwnd));
 }
+
+void killForeground(const Arg* arg){
+	HWND curr = GetForegroundWindow();
+	PostMessage(curr, WM_CLOSE, 0, 0);
+}
+
 #ifdef VDA_FEATURES
 #include "VD/VD.c"
 #endif

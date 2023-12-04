@@ -24,6 +24,7 @@ static Key keys[] = {
 	{ MODKEY,                     	'C', spawn,         {.v = codeforces } },
 	{ MODKEY,                     	'L', spawn,         {.v = leetcode } },
 	{ MODKEY,                       'E',       toggleexplorer, {0} },
+	{ MODKEY,                       'Q',       killForeground,          {0} },
 	{ MODKEY | MOD_SHIFT,                       'Q',       quit,          {0} },
 	#ifdef VDA_FEATURES
 	NUMKEY(1),
