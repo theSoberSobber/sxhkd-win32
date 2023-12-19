@@ -35,11 +35,17 @@ typedef int(*GoToDesktopNumber)(int);
 typedef int(*MoveWindowToDesktopNumber)(HWND, int);
 typedef int(*GetCurrentDesktop)();
 typedef int(*GetWindowDesktopNumber)(HWND);
+typedef int(*GetCurrentDesktopNumber)();
+typedef int(*IsWindowOnCurrentVirtualDesktop)(HWND);
 
 GetCurrentDesktop GetCurrentDesktopFunc;
 MoveWindowToDesktopNumber MoveWindowToDesktopNumberFunc;
 GoToDesktopNumber GoToDesktopNumberFunc;
 GetWindowDesktopNumber GetWindowDesktopNumberFunc;
+GetCurrentDesktopNumber GetCurrentDesktopNumberFunc;
+IsWindowOnCurrentVirtualDesktop IsWindowOnCurrentVirtualDesktopFunc;
+
+HWND lastActive[10]; // 0 to 9 index
 #endif
 
 #include "actions.c"
@@ -106,6 +112,23 @@ void setup(HINSTANCE hInstance) {
 	for (int i = 0; i < LENGTH(keys); i++) RegisterHotKey(dwmhwnd, i + 1, keys[i].mod, keys[i].key);
 }
 
+#ifdef VDA_FEATURES
+BOOL CALLBACK initEnumCall(HWND hwnd, LPARAM lParam) {
+    char windowTitle[256];
+    GetWindowTextA(hwnd, windowTitle, sizeof(windowTitle));
+    if (IsWindowVisible(hwnd) && windowTitle[0] != '\0') {
+		if(lastActive[GetWindowDesktopNumberFunc(hwnd)]!=NULL) return TRUE;
+        printf("windowTitle: %s %d\n", windowTitle, GetWindowDesktopNumberFunc(hwnd));
+		lastActive[GetWindowDesktopNumberFunc(hwnd)]=hwnd;
+    }
+    return TRUE;
+}
+
+HWND initLastActive(){
+    EnumWindows(initEnumCall, 0);
+    return topmost;
+}
+#endif
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
 
@@ -134,6 +157,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	GoToDesktopNumberFunc = (GoToDesktopNumber)GetProcAddress(VDA, "GoToDesktopNumber");
 	GetCurrentDesktopFunc = (GetCurrentDesktop)GetProcAddress(VDA, "GetCurrentDesktopNumber");
 	GetWindowDesktopNumberFunc = (GetWindowDesktopNumber)GetProcAddress(VDA, "GetWindowDesktopNumber");
+	GetCurrentDesktopNumberFunc = (GetCurrentDesktopNumber)GetProcAddress(VDA, "GetCurrentDesktopNumber");
+	IsWindowOnCurrentVirtualDesktopFunc = (IsWindowOnCurrentVirtualDesktop)GetProcAddress(VDA, "IsWindowOnCurrentVirtualDesktop");
+	for(int i=0; i<10; i++) lastActive[i]=NULL;
+	// init with topmost windows of all VDs is essential for when not launched at startup
+	initLastActive();
 	#endif
 	MSG msg;
 	setup(hInstance);

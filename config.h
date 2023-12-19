@@ -20,7 +20,7 @@ static const char *leetcode[] = {"open", "https://leetcode.com", NULL};
 static Key keys[] = {
 	/* modifier                     key        function        argument */
 	{ MODKEY,                       'B',       test,          {0} },
-	{ MODKEY,                       'P',       spawn,      	  {.v = vscode} },
+	{ MODKEY,                       'O',       spawn,      	  {.v = vscode} },
 	{ MODKEY,                     VK_RETURN, spawn,         {.v = termcmd } },
 	{ MODKEY | MOD_SHIFT,         VK_RETURN, spawn,         {.v = adminCmd } },
 	{ MODKEY,                     	'C', spawn,         {.v = codeforces } },
