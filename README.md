@@ -2,10 +2,16 @@
 Sxhkd impl for Windows with Optional UNIX like workspace support through Native VirtualDesktops!
 
 # Instructions
-- Edit config.h and actions.h according to what you want
-- Build using `make all` or `make`
-- Copy the produced `sxhkd-win32.exe` to your location of choice
-- Run `make clean` in the working directory to clean it
+- Local Enviornment Method
+    - Edit config.h and actions.h according to what you want
+    - Build using `make all` or `make`
+    - Copy the produced `sxhkd-win32.exe` to your location of choice
+    - Run `make clean` in the working directory to clean it
+- Github Actions Method (Easier)
+    - Fork the repository
+    - Change config.h or any other code as you want
+    - Go to actions tab and dispatch the build workflow
+    - Download the built exe and dll from releases, Enjoy!
 
 # Virtual Desktop Features
 - Please see [VD-Action.md](./VD-action.md).
