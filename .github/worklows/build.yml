@@ -1,0 +1,66 @@
+name: Build
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  Windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Install dependencies
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-binutils
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Build
+        run : |
+          gcc main.c -mwindows -o main
+          mkdir release
+          cp main.exe release
+          cp VirtualDesktopAccessor.dll release
+      - name: Publish artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: release-windows
+          path: |
+            release/main.exe
+            release/VirtualDesktopAccessor.dll
+  Release:
+    needs: [Windows]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build: [windows]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: actions/download-artifact@v2
+      - name: Zip artifacts
+        run: |
+         zip -r release-${{matrix.build}}.zip release-${{matrix.build}}
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+         files: |
+           release-${{matrix.build}}.zip
+         body: |
+          Dispatch Build of sxhkd-win32.
+         prerelease: true
+         tag_name: 1.0.2
+         name: Release 1.0.2
+        env:
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
