@@ -15,6 +15,7 @@ Sxhkd impl for Windows with Optional UNIX like workspace support through Native 
 
 # Virtual Desktop Features
 - Please see [VD-Action.md](./VD-action.md).
+- Note that the VirtualDesktopAccessor DLL used right now is broken on some newer builds of Windows, if other hotkeys are working, then you might wanna download the latest release of VirtualDesktopAccessor.dll from [here](https://github.com/Ciantic/VirtualDesktopAccessor).
 - The optimal way of using VDA with sxhkd is after setting the taskbar as hidden and toggling explorer by Alt+E (see config), this prevents any weird flickering behaviour that the taskbar has when VDs are switched too fast
 - PS: You can use Bing Wallpaper and set on every VD for a truly awesome VD experience!
 
