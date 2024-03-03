@@ -145,14 +145,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	dbg("Hello!! : ))\n");
 	#ifdef VDA_FEATURES
 	char* libName = "\\VirtualDesktopAccessor.dll";
-	TCHAR libFullPath[MAX_PATH + 1] = { 0 };
-	GetCurrentDirectory(MAX_PATH, libFullPath);
-	// for(int i=0; libFullPath[i]; i++) if(libFullPath[i]=='\\') libFullPath[i]='/';
-	strcat_s(libFullPath, sizeof libFullPath, libName);
-	VDA = LoadLibrary(libFullPath);
-	if (VDA == NULL){
-    	printf("Failed to load the DLL, VD Features will not work");
-	};
+    TCHAR exeFullPath[MAX_PATH + 1] = { 0 };
+    GetModuleFileName(NULL, exeFullPath, MAX_PATH);
+    char* lastSlash = strrchr(exeFullPath, '\\');
+    if (lastSlash != NULL) *(lastSlash + 1) = '\0';
+    strcat_s(exeFullPath, sizeof exeFullPath, libName);
+    HINSTANCE VDA = LoadLibrary(exeFullPath);
+    if (VDA == NULL) printf("Failed to load the DLL, VD Features will not work\n");
 	MoveWindowToDesktopNumberFunc = (MoveWindowToDesktopNumber)GetProcAddress(VDA, "MoveWindowToDesktopNumber");
 	GoToDesktopNumberFunc = (GoToDesktopNumber)GetProcAddress(VDA, "GoToDesktopNumber");
 	GetCurrentDesktopFunc = (GetCurrentDesktop)GetProcAddress(VDA, "GetCurrentDesktopNumber");
