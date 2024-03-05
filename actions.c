@@ -26,6 +26,15 @@ void killForeground(const Arg* arg){
 	PostMessage(curr, WM_CLOSE, 0, 0);
 }
 
+void killMacForeground(const Arg* arg) {
+    HWND curr = GetForegroundWindow();
+    DWORD pid;
+    GetWindowThreadProcessId(curr, &pid);
+    HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
+    TerminateProcess(hProcess, 0);
+    CloseHandle(hProcess);
+}
+
 #ifdef VDA_FEATURES
 #include "VD/VD.c"
 #endif
